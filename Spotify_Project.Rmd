@@ -1,0 +1,164 @@
+---
+title: "Spotify Analysis"
+author: "Hunter"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+---
+```{r include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(patchwork)
+spotify <- read_csv("https://raw.githubusercontent.com/reisanar/datasets/master/all_billboard_summer_hits.csv")
+```
+## **Introduction**
+
+###       In this analysis I will be working on the Spotify "all billboard summer  hits" data set. This data set focuses in on the features of songs that were featured in the all billboard summer hits playlist of that year (only one playlist is made per year). The main goal of this analysis is to approach this data set in a way that will allow for a better understanding into what exactly makes a song good enough to make it into this playlist, using things like ; what key the song is in, the loudness of the song, or even the "danceability" of the song. 
+  
+### **Note:** 
+
+####  Every question will have mini analysis of what was just done. The main analysis will be at the end of the page titled **conclusion**.
+
+
+  
+### *Presented below is the data set I will be working with*
+
+```{r include = FALSE}
+
+glimpse((spotify))
+```
+
+```{r echo=FALSE}
+spotify
+```
+
+
+
+
+
+
+## **Question 1**
+
+### *Which key had the most energy?*
+
+
+```{r echo=FALSE}
+ten_songs<- spotify %>% 
+  group_by(key_mode) %>% 
+  arrange(desc(energy)) %>% 
+  select(key_mode,energy,track_name,year,loudness) %>% 
+  head(10)
+ten_songs
+```
+###     The work above reveals that the from the 10 most energetic songs, key does not actually play part in the energy of the song. As shown every key shown above is different from each other. This might be due to the fact that the key does not make the song less danceable, the artist does. As shown below (figure 1) , the energy is more related to the loudness of the song. Every song in the top ten are all in the middle range of all of the songs (shown in figure 2).Also notice in figure 2 that the energy increases as the loudness decreases. 
+
+```{r echo=FALSE}
+ten_songs %>% 
+  ggplot()+
+  geom_point(aes(x=loudness,y=energy,color=track_name))+
+  guides(color = guide_legend((title = "Track Names")))+
+  theme(axis.title.x = element_text(colour = "#7F3D17"),
+        axis.title.y = element_text(colour = "#7F3D17"),
+        plot.title = element_text(colour = "#7F3D17"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank())+
+  labs(title="Figure 1")
+```
+```{r  echo=FALSE}
+Figure2 <- spotify %>% 
+  ggplot(aes(x=loudness,y=energy))+
+  geom_point(color="blue",fill='orange')+
+  theme(axis.title.x = element_text(colour = "#7F3D17"),
+        axis.title.y = element_text(colour = "#7F3D17"),
+        plot.title = element_text(colour = "#7F3D17"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank())+
+  ggtitle("Figure 2")
+Figure2
+```
+
+## **Question 2**
+
+### *Do songs have a higher danceability if the they are louder*
+
+```{r  echo=FALSE}
+dance_songs<- spotify %>% 
+  arrange(loudness) %>% 
+  select(danceability,loudness,track_name,year) %>% 
+  head(15)
+dance_songs
+```
+###     This data shows that the louder you go, the less danceability the song is, but notice in figure 4 that there is a middle ground (where the top 15 danceable songs come from) where it peaks in danceability then goes down slightly. This proves that though being too loud is a bad thing if you want to make a danceable song, so is being too quiet. You simply must find a middle ground.
+```{r echo=FALSE}
+dance_songs %>% 
+  ggplot(aes(x=loudness,y=danceability,color=track_name))+
+  geom_point(size = 2)+
+  guides(color = guide_legend((title = "Track Names")))+
+  labs(title="Figure 3")+
+  theme(axis.title.x = element_text(colour = "#7F3D17"),
+        axis.title.y = element_text(colour = "#7F3D17"),
+        plot.title = element_text(colour = "#7F3D17"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank())
+```
+```{r echo = FALSE}
+spotify %>% 
+  ggplot(aes(x=loudness,y=danceability))+
+  geom_point(size = 2)+
+  labs(title="Figure 4")+
+  theme(axis.title.x = element_text(colour = "#7F3D17"),
+        axis.title.y = element_text(colour = "#7F3D17"),
+        plot.title = element_text(colour = "#7F3D17"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank())
+```
+
+## **Question 3**
+
+###  *What time signature is the most popular within higher tempos?*
+```{r echo=FALSE}
+Tempo_song<- spotify %>% 
+  arrange(desc(tempo)) %>% 
+  select(time_signature,tempo,track_name) %>% 
+  head(15)
+Tempo_song
+```
+
+###     This chart shows that 4/4 time signature is the most common time signature within this data set. 4/4 time signature is the most common time signature in modern day music(anything other than jazz and classical).This is due to the simplicity of the time signature, no weird off beats, simply a steady, easy signature to both follow and to create beats, especially at a faster tempo. With faster tempos it is harder to what is considered "keeping up" with the beat. So in order to make sure the artist does not lack behind the beat of the song, it is put into 4/4 in order to make it simple to follow.
+
+
+## **Question 4**
+
+###  *What year did the highest average danceability to songs come out*
+
+```{r echo = FALSE}
+spotify %>%
+  group_by(year) %>%
+  summarise(mean_value = mean(danceability)) %>% 
+  arrange(desc(mean_value))
+```
+
+```{r echo=FALSE}
+spotify %>%
+  group_by(year) %>%
+  summarise(mean_value = mean(danceability)) %>%
+  arrange(desc(mean_value)) %>% 
+  head(10) %>% 
+  ggplot( aes(x = year, y = mean_value,color=year)) +
+  geom_point() +
+  labs(title = "Figure 5",
+       x = "Year",
+       y = "Mean Value")
+
+
+```
+
+
+## Conclusion
+
+###     The data set provides a multitude of information to be explored, but the information explored today shows that a lot more factors play part in music. For example, in order to have a highly danced to song, you might think you need it to be a certain key, but you would also need it to be upbeat and have a good tempo, on top of that the time period is a strong factor in play here. In the future, a deeper dive on what are the exact factors that play the strongest part in the reason for a certain song being the top in a category is needed for this data to be analyzed to its true fullest. The analyzed data presented today still shows some interesting facts and truly gives the viewer a understanding on why music is heard a certain way.
